@@ -6,5 +6,5 @@ We have used PL/SQL using Oracle Database
 
 Below is the ER diagram representing the database design
 <p align="center">
-  <img src="">
+  <img src="https://github.com/abishek235/Vacation-Rental-Database-Design/raw/master/ER_DATABASE_DESIGN.png">
 </p>
