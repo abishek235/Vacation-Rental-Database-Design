@@ -1,192 +1,347 @@
-
-
 --FEATURE EXECUTABLES WITH EXAMPLES FOR VARIOUS CASES
-set serveroutput on;
---FEATURE 1 - Create a User
---exec RegisterUser(FirstName,LastName,GuestType,HostType,EMail,Password,Street,State,Zip,City,Phone,DOB,Gender,Job)
---User Already Exists:
-set serveroutput on;
-EXEC RegisterUser ('Sam', 'Williams', 'Y', 'N', 'swilliams@gmail.com', 'abc%467', 'Strateford Garden Drive','Maryland',20910,'Calverton', '3016458723', date'1978-12-10', 'M', 'Student');
-
---Adding a New User(Guest):
-EXEC RegisterUser ('Jenno', 'Gerald', 'Y', 'N', 'Jenno@gmail.com', 'JenGer', '1136 Baltimore Pike Road','Maryland',23088,'Baltimore', '260-992-1786', date '1988-09-22', 'M', 'Designer');
---Adding a New User(Host):
-EXEC RegisterUser ('Burrow', 'Radcliff', 'N', 'Y', 'burrow@gmail.com', 'BurRad', '172 Northwood Drive','California',17612,'San Jose', '996-993-9922', date '1980-08-13', 'M', 'Scientist');
-delete from guest where g_u_id=22;
-delete from users where u_id=22;
-delete from host where h_u_id=23;
-delete from users where u_id=23;
-
---FEATURE 2 - User Login
---exec UserLogins(email, password);
---Login Unsuccessful - Invalid Password.
-exec UserLogins('Jenno@gmail.com', 'JenGr');
---Login Unsuccessful - - Invalid Email.
-exec UserLogins('Jenna@gmail.com', 'JenGer');
---Login Successful
-exec UserLogins('burrow@gmail.com', 'BurRad');
-
---FEATURE 3 - Display messages for user
---exec displayMessages(userid,date);
---No message available
-exec displayMessages(1,date'2017-12-17');
---Wrong user ID
-exec displayMessages(175,date'2017-10-17');
---Correct user ID
-exec displayMessages(5,date'2017-12-18');
-
---FEATURE 4 - Create listing for host(GetNew HostID)
---exec createList(hostID,Street,City,State,zip,HouseType,MaxCap,MaxBed,NoRoom,NoBath,MinNight,CheckInTime,CheckOutTime,Description);
---Listing already exists
-exec createList(10,'2nd Poplar Ave','Arbutus','MD',21220,'House',4,2,2,2,1,to_dsinterval('0 11:00:00'),to_dsinterval('0 12:00:00'),'This is an individual appartment with a balcony.');
---Wrong user ID
-exec createList(1001,'Poplar Ave','Arbutus','MD',21220,'House',4,2,2,2,1,to_dsinterval('0 11:00:00'),to_dsinterval('0 12:00:00'),'This is an individual appartment with a balcony.');
---Correct Listing details
-exec createList(23,'1999 Turnbury lane','North wales','PA',19454,'House',9,3,3,3,3,to_dsinterval('0 12:00:00'),to_dsinterval('0 12:00:00'),'Individual town house with relaxing view.');
-select * from listing;
-delete from listing where l_id=32;
-
---FEATURE 5 - Create period for a listing(GetNew ListID)
---exec pricePeriod(ListID,StartDate,EndDate,Price);
---Period already exists
-exec pricePeriod(16,date'2017-11-01',date'2017-12-01',100);
-exec pricePeriod(16,date'2017-12-01',date'2017-12-31',100);
-exec pricePeriod(16,date'2017-12-31',date'2018-12-01',100);
-exec pricePeriod(16,date'2017-11-01',date'2017-12-01',100);
---wrong listing ID
-exec pricePeriod(137,date'2017-12-01',date'2017-12-31',100);
---Wrong dates
-exec pricePeriod(16,date'2018-01-31',date'2018-01-01',100);
---Correct period details
-exec pricePeriod(200,date'2017-09-01',date'2017-11-30',100);
-delete from period where l_id=32;
-
---FEATURE 6 - Show available listing
-
-exec findListing(City,State,CheckInDate,CheckOutDate);
-
---No Period Available 
-exec findListing('baltimore','MD',date'2018-04-02',date'2018-04-04');
-
---Existing Booking(267.75=> Rent=255, Service fee=12.75)
-exec findListing('baltimore','MD',date'2017-04-02',date'2017-04-04');
---Wrong city
-exec findListing('canada','MD',date'2017-03-02',date'2017-03-04');
-
---Correct Listing (267.75=> Rent=255, Service fee=12.75)
-exec findListing('baltimore','MD',date'2017-04-25',date'2017-04-28');
-
---Canceled Booking (Price = Per Night price * No. of days) + 5% service tax
-exec findListing('hanover','MD',date'2017-03-02',date'2017-03-04');
-
-
-
---FEATURE 7 - 
-Place a Booking request(Get ListID and GuestID)
---exec bookingRequest(ListID,GuestID,CheckInDate,CheckOutDate,NoGuest,NoChild);
---INVALID GUEST ID
-exec bookingRequest(11,75,date'2017-04-02',date'2017-04-04',1,0);
---INVALID LIST ID
-exec bookingRequest(111,5,date'2017-04-02',date'2017-04-04',1,0);
---EXCEEDING GUEST NO (Max capacity for LID 16 is 2)
-exec bookingRequest(16,5,date'2017-04-02',date'2017-04-04',10,0);
---DATES OUT OF PERIOD
-exec bookingRequest(11,5,date'2017-03-02',date'2017-03-04',1,0);
---MINIMUM STAY REQUIREMENT (Min stay nights for LID 12 is 2)
-exec bookingRequest(12,5,date'2017-02-02',date'2017-02-02',1,0);
---CORRECT DATA
-exec bookingRequest(13,16,date'2017-04-28',date'2017-05-02',1,0);
-delete from booking where b_id=5;
-
-
-
---FEATURE 8 - 
-Approval/ Denial of Booking request by host(GetBookingID)
---exec bookingStatus(BookingID,Status);
---WRONG BOOKING ID
-exec bookingStatus(1000,'Rejected');
---CORRECT DATA
-exec bookingStatus(2, 'Approved');
-delete from message where m_id=23;
-select * from booking;
-
---FEATURE 9 - 
-Display Booking request for a host
---exec showRequest(HostID);
---CORRECT HOST ID NO REQUEST
-exec showRequest(6);
---INCORRECT HOST ID
-exec showRequest(299);
---CORRECT HOST ID WITH REQUEST
-exec showRequest(7);
-
---FEATURE 10 
---exec guestPayment(BookingID,PaymentType,PaymentDate);
---Payment date exceeded
-exec guestPayment(2,'Card',date'2017-12-15');
---Booking already paid.
-exec guestPayment(1,'Card',date'2017-12-15');
---Booking does not exist:
-exec guestPayment(5,'Card',date'2017-9-19');
--- Correct
-exec guestPayment(2,'Card',date'2017-01-31');
-update booking set b_pay_status = 0, b_status = 'Approved', b_pay_method = null, b_pay_date = null, b_total = null, b_total_rental = null where b_id = 2;
-delete from review where b_id = 2;
-
-
-
---FEATURE 11 - Booking cancellation
---exec Cancellation(BookingID);
---Invalid Booking
-exec Cancellation(30);
--- Correct Booking ID, Booking Pay Status (b_pay_status) = 1 (Already paid)
-exec Cancellation(1);
--- Correct Booking ID, Booking Pay Status (b_pay_status) = 0
-exec Cancellation(3);
-update booking set b_status='Approved' where b_id=3;
-
---FEATURE 12 - Payout to host
---exec HostPayout(HostID,PaymentDate);
---Case1: Valid HostID + GuestPayout status (b_pay_status) = 1 Paid + HostPayoutStatus(b_h_status) = 0 Unpaid & GuestPaymentDate < InputDate
-exec HostPayout(8,sysdate);
-select * from payout;
-select * from message;
-update booking set b_h_payout_status = 0, b_total_host = 0 where h_u_id = 8;
-delete from payout where pay_id = 9;
-delete from message where m_id = 29;
---Case2: Invalid HostID
-exec HostPayout(100,sysdate);
-
---FEATURE 13 - Guest reviewing host
---exec HostReview(BookingID,GuestID,HostRating,HostReview);
---Wrong Booking ID
-set serveroutput on;
-exec HostReview(30,2,4,'Good host. Had a nice stay.');
---Correct Booking ID, Wrong Guest ID
-exec HostReview(1,2,4,'Good host. Had a nice stay.');
---Correct Booking ID, Correct Guest ID, Status:Not Paid
-exec HostReview(2,5,4,'Good host. Had a nice stay.');
---Correct Booking ID
---exec HostReview(1,5,4,'Good host. Had a nice stay.');
-exec HostReview(1,5,4,'Good stay');
-select * from review;
-select * from host;
-update host set h_avg_rating=2 where h_u_id=8;
---update review set h_rating=null, g_rating=null, r_body=null where b_id=1;
-
---FEATURE 14 - Host reviewing guest
---exec GuestReview(BookingID,HostID,GuestReview);
---Wrong Booking ID
-exec GuestReview(30,2,4);
---Correct Booking ID, Wrong Host ID
-exec GuestReview(1,2,4);
---Correct Booking ID, Correct Guest ID, Status:Not Paid
-exec GuestReview(2,6,4);
---Correct Booking ID
-exec GuestReview(1,8,4);
-select * from review;
-
---FEATURE 15 - Display Top hosts and guest with all details
---exec SummaryStatistics(NoOfRecordsToDisplay)
-exec SummaryStatistics(3);
-
+set
+  serveroutput on;--FEATURE 1 - Create a User
+  --exec RegisterUser(FirstName,LastName,GuestType,HostType,EMail,Password,Street,State,Zip,City,Phone,DOB,Gender,Job)
+  --User Already Exists:
+set
+  serveroutput on;EXEC RegisterUser (
+    'Sam',
+    'Williams',
+    'Y',
+    'N',
+    'swilliams@gmail.com',
+    'abc%467',
+    'Strateford Garden Drive',
+    'Maryland',
+    20910,
+    'Calverton',
+    '3016458723',
+    date '1978-12-10',
+    'M',
+    'Student'
+  );--Adding a New User(Guest):
+  EXEC RegisterUser (
+    'Jenno',
+    'Gerald',
+    'Y',
+    'N',
+    'Jenno@gmail.com',
+    'JenGer',
+    '1136 Baltimore Pike Road',
+    'Maryland',
+    23088,
+    'Baltimore',
+    '260-992-1786',
+    date '1988-09-22',
+    'M',
+    'Designer'
+  );--Adding a New User(Host):
+  EXEC RegisterUser (
+    'Burrow',
+    'Radcliff',
+    'N',
+    'Y',
+    'burrow@gmail.com',
+    'BurRad',
+    '172 Northwood Drive',
+    'California',
+    17612,
+    'San Jose',
+    '996-993-9922',
+    date '1980-08-13',
+    'M',
+    'Scientist'
+  );
+delete from
+  guest
+where
+  g_u_id = 22;
+delete from
+  users
+where
+  u_id = 22;
+delete from
+  host
+where
+  h_u_id = 23;
+delete from
+  users
+where
+  u_id = 23;--FEATURE 2 - User Login
+  --exec UserLogins(email, password);
+  --Login Unsuccessful - Invalid Password.
+  exec UserLogins('Jenno@gmail.com', 'JenGr');--Login Unsuccessful - - Invalid Email.
+  exec UserLogins('Jenna@gmail.com', 'JenGer');--Login Successful
+  exec UserLogins('burrow@gmail.com', 'BurRad');--FEATURE 3 - Display messages for user
+  --exec displayMessages(userid,date);
+  --No message available
+  exec displayMessages(1, date '2017-12-17');--Wrong user ID
+  exec displayMessages(175, date '2017-10-17');--Correct user ID
+  exec displayMessages(5, date '2017-12-18');--FEATURE 4 - Create listing for host(GetNew HostID)
+  --exec createList(hostID,Street,City,State,zip,HouseType,MaxCap,MaxBed,NoRoom,NoBath,MinNight,CheckInTime,CheckOutTime,Description);
+  --Listing already exists
+  exec createList(
+    10,
+    '2nd Poplar Ave',
+    'Arbutus',
+    'MD',
+    21220,
+    'House',
+    4,
+    2,
+    2,
+    2,
+    1,
+    to_dsinterval('0 11:00:00'),
+    to_dsinterval('0 12:00:00'),
+    'This is an individual appartment with a balcony.'
+  );--Wrong user ID
+  exec createList(
+    1001,
+    'Poplar Ave',
+    'Arbutus',
+    'MD',
+    21220,
+    'House',
+    4,
+    2,
+    2,
+    2,
+    1,
+    to_dsinterval('0 11:00:00'),
+    to_dsinterval('0 12:00:00'),
+    'This is an individual appartment with a balcony.'
+  );--Correct Listing details
+  exec createList(
+    23,
+    '1999 Turnbury lane',
+    'North wales',
+    'PA',
+    19454,
+    'House',
+    9,
+    3,
+    3,
+    3,
+    3,
+    to_dsinterval('0 12:00:00'),
+    to_dsinterval('0 12:00:00'),
+    'Individual town house with relaxing view.'
+  );
+select
+  *
+from
+  listing;
+delete from
+  listing
+where
+  l_id = 32;--FEATURE 5 - Create period for a listing(GetNew ListID)
+  --exec pricePeriod(ListID,StartDate,EndDate,Price);
+  --Period already exists
+  exec pricePeriod(16, date '2017-11-01', date '2017-12-01', 100);exec pricePeriod(16, date '2017-12-01', date '2017-12-31', 100);exec pricePeriod(16, date '2017-12-31', date '2018-12-01', 100);exec pricePeriod(16, date '2017-11-01', date '2017-12-01', 100);--wrong listing ID
+  exec pricePeriod(137, date '2017-12-01', date '2017-12-31', 100);--Wrong dates
+  exec pricePeriod(16, date '2018-01-31', date '2018-01-01', 100);--Correct period details
+  exec pricePeriod(200, date '2017-09-01', date '2017-11-30', 100);
+delete from
+  period
+where
+  l_id = 32;--FEATURE 6 - Show available listing
+  exec findListing(City, State, CheckInDate, CheckOutDate);--No Period Available
+  exec findListing(
+    'baltimore',
+    'MD',
+    date '2018-04-02',
+    date '2018-04-04'
+  );--Existing Booking(267.75=> Rent=255, Service fee=12.75)
+  exec findListing(
+    'baltimore',
+    'MD',
+    date '2017-04-02',
+    date '2017-04-04'
+  );--Wrong city
+  exec findListing(
+    'canada',
+    'MD',
+    date '2017-03-02',
+    date '2017-03-04'
+  );--Correct Listing (267.75=> Rent=255, Service fee=12.75)
+  exec findListing(
+    'baltimore',
+    'MD',
+    date '2017-04-25',
+    date '2017-04-28'
+  );--Canceled Booking (Price = Per Night price * No. of days) + 5% service tax
+  exec findListing(
+    'hanover',
+    'MD',
+    date '2017-03-02',
+    date '2017-03-04'
+  );--FEATURE 7 -
+  Place a Booking request(
+    Get ListID
+    and GuestID
+  ) --exec bookingRequest(ListID,GuestID,CheckInDate,CheckOutDate,NoGuest,NoChild);
+  --INVALID GUEST ID
+  exec bookingRequest(
+    11,
+    75,
+    date '2017-04-02',
+    date '2017-04-04',
+    1,
+    0
+  );--INVALID LIST ID
+  exec bookingRequest(
+    111,
+    5,
+    date '2017-04-02',
+    date '2017-04-04',
+    1,
+    0
+  );--EXCEEDING GUEST NO (Max capacity for LID 16 is 2)
+  exec bookingRequest(
+    16,
+    5,
+    date '2017-04-02',
+    date '2017-04-04',
+    10,
+    0
+  );--DATES OUT OF PERIOD
+  exec bookingRequest(
+    11,
+    5,
+    date '2017-03-02',
+    date '2017-03-04',
+    1,
+    0
+  );--MINIMUM STAY REQUIREMENT (Min stay nights for LID 12 is 2)
+  exec bookingRequest(
+    12,
+    5,
+    date '2017-02-02',
+    date '2017-02-02',
+    1,
+    0
+  );--CORRECT DATA
+  exec bookingRequest(
+    13,
+    16,
+    date '2017-04-28',
+    date '2017-05-02',
+    1,
+    0
+  );
+delete from
+  booking
+where
+  b_id = 5;--FEATURE 8 -
+  Approval / Denial of Booking request by host(GetBookingID) --exec bookingStatus(BookingID,Status);
+  --WRONG BOOKING ID
+  exec bookingStatus(1000, 'Rejected');--CORRECT DATA
+  exec bookingStatus(2, 'Approved');
+delete from
+  message
+where
+  m_id = 23;
+select
+  *
+from
+  booking;--FEATURE 9 -
+  Display Booking request for a host --exec showRequest(HostID);
+  --CORRECT HOST ID NO REQUEST
+  exec showRequest(6);--INCORRECT HOST ID
+  exec showRequest(299);--CORRECT HOST ID WITH REQUEST
+  exec showRequest(7);--FEATURE 10
+  --exec guestPayment(BookingID,PaymentType,PaymentDate);
+  --Payment date exceeded
+  exec guestPayment(2, 'Card', date '2017-12-15');--Booking already paid.
+  exec guestPayment(1, 'Card', date '2017-12-15');--Booking does not exist:
+  exec guestPayment(5, 'Card', date '2017-9-19');-- Correct
+  exec guestPayment(2, 'Card', date '2017-01-31');
+update
+  booking
+set
+  b_pay_status = 0,
+  b_status = 'Approved',
+  b_pay_method = null,
+  b_pay_date = null,
+  b_total = null,
+  b_total_rental = null
+where
+  b_id = 2;
+delete from
+  review
+where
+  b_id = 2;--FEATURE 11 - Booking cancellation
+  --exec Cancellation(BookingID);
+  --Invalid Booking
+  exec Cancellation(30);-- Correct Booking ID, Booking Pay Status (b_pay_status) = 1 (Already paid)
+  exec Cancellation(1);-- Correct Booking ID, Booking Pay Status (b_pay_status) = 0
+  exec Cancellation(3);
+update
+  booking
+set
+  b_status = 'Approved'
+where
+  b_id = 3;--FEATURE 12 - Payout to host
+  --exec HostPayout(HostID,PaymentDate);
+  --Case1: Valid HostID + GuestPayout status (b_pay_status) = 1 Paid + HostPayoutStatus(b_h_status) = 0 Unpaid & GuestPaymentDate < InputDate
+  exec HostPayout(8, sysdate);
+select
+  *
+from
+  payout;
+select
+  *
+from
+  message;
+update
+  booking
+set
+  b_h_payout_status = 0,
+  b_total_host = 0
+where
+  h_u_id = 8;
+delete from
+  payout
+where
+  pay_id = 9;
+delete from
+  message
+where
+  m_id = 29;--Case2: Invalid HostID
+  exec HostPayout(100, sysdate);--FEATURE 13 - Guest reviewing host
+  --exec HostReview(BookingID,GuestID,HostRating,HostReview);
+  --Wrong Booking ID
+set
+  serveroutput on;exec HostReview(30, 2, 4, 'Good host. Had a nice stay.');--Correct Booking ID, Wrong Guest ID
+  exec HostReview(1, 2, 4, 'Good host. Had a nice stay.');--Correct Booking ID, Correct Guest ID, Status:Not Paid
+  exec HostReview(2, 5, 4, 'Good host. Had a nice stay.');--Correct Booking ID
+  --exec HostReview(1,5,4,'Good host. Had a nice stay.');
+  exec HostReview(1, 5, 4, 'Good stay');
+select
+  *
+from
+  review;
+select
+  *
+from
+  host;
+update
+  host
+set
+  h_avg_rating = 2
+where
+  h_u_id = 8;--update review set h_rating=null, g_rating=null, r_body=null where b_id=1;
+  --FEATURE 14 - Host reviewing guest
+  --exec GuestReview(BookingID,HostID,GuestReview);
+  --Wrong Booking ID
+  exec GuestReview(30, 2, 4);--Correct Booking ID, Wrong Host ID
+  exec GuestReview(1, 2, 4);--Correct Booking ID, Correct Guest ID, Status:Not Paid
+  exec GuestReview(2, 6, 4);--Correct Booking ID
+  exec GuestReview(1, 8, 4);
+select
+  *
+from
+  review;--FEATURE 15 - Display Top hosts and guest with all details
+  --exec SummaryStatistics(NoOfRecordsToDisplay)
+  exec SummaryStatistics(3);
